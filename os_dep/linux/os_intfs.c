@@ -336,7 +336,7 @@ module_param(rtw_vht_enable, int, 0644);
 int rtw_vht_24g_enable = 1; /* 0:disable, 1:enable */
 module_param(rtw_vht_24g_enable, int, 0644);
 
-int rtw_ampdu_factor = 7;
+int rtw_ampdu_factor = MAX_AMPDU_FACTOR_64K;
 
 uint rtw_vht_rx_mcs_map = 0xaaaa;
 module_param(rtw_vht_rx_mcs_map, uint, 0644);
@@ -346,6 +346,10 @@ MODULE_PARM_DESC(rtw_vht_rx_mcs_map, "VHT RX MCS map");
 
 /* 0: not check in watch dog, 1: check in watch dog  */
 int rtw_check_hw_status = 0;
+
+int rtw_tx_max_agg_num = 12;
+module_param(rtw_tx_max_agg_num, int, 0644);
+MODULE_PARM_DESC(rtw_tx_max_agg_num, "Driver enforced TX AMPDU entry count (unit:2 frames), <=0 disables driver control");
 
 int rtw_low_power = 0;
 int rtw_wifi_spec = 0;
@@ -1295,6 +1299,10 @@ uint loadparam(_adapter *padapter)
 		registry_par->rx_ampdu_amsdu = (u8)rtw_rx_ampdu_amsdu;
 		registry_par->tx_ampdu_amsdu = (u8)rtw_tx_ampdu_amsdu;
 		registry_par->tx_quick_addba_req = (u8)rtw_quick_addba_req;
+		if (rtw_tx_max_agg_num <= 0 || rtw_tx_max_agg_num > 0x1F)
+				registry_par->tx_max_agg_num = 0xFF;
+		else
+				registry_par->tx_max_agg_num = (u8)rtw_tx_max_agg_num;
 		registry_par->short_gi = (u8)rtw_short_gi;
 		registry_par->ldpc_cap = (u8)rtw_ldpc_cap;
 #if defined(CONFIG_CUSTOMER01_SMART_ANTENNA)
@@ -2584,7 +2592,7 @@ u8 rtw_init_default_value(_adapter *padapter)
 	padapter->tx_amsdu = 2;
 	padapter->tx_amsdu_rate = 400;
 #endif
-	padapter->driver_tx_max_agg_num = 0xFF;
+	padapter->driver_tx_max_agg_num = pregistrypriv->tx_max_agg_num;
 #ifdef DBG_RX_COUNTER_DUMP
 	padapter->dump_rx_cnt_mode = 0;
 	padapter->drv_rx_cnt_ok = 0;
