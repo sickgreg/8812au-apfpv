@@ -324,6 +324,7 @@
 /* #define DBG_RX_SEQ */
 /* #define DBG_RX_SIGNAL_DISPLAY_PROCESSING */
 /* #define DBG_RX_SIGNAL_DISPLAY_SSID_MONITORED "jeff-ap" */
+#define DBG_RX_SIGNAL_DISPLAY_RAW_DATA
 
 
 

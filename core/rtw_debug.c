@@ -3498,6 +3498,11 @@ int proc_get_trx_info_debug(struct seq_file *m, void *v)
 	struct net_device *dev = m->private;
 	_adapter *padapter = (_adapter *)rtw_netdev_priv(dev);
 
+#ifdef DBG_RX_SIGNAL_DISPLAY_RAW_DATA
+	if (!padapter->recvpriv.store_law_data_flag)
+		padapter->recvpriv.store_law_data_flag = 1;
+#endif
+
 	/*============  tx info ============	*/
 	rtw_hal_get_def_var(padapter, HW_DEF_RA_INFO_DUMP, m);
 
