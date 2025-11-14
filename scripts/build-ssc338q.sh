@@ -25,5 +25,10 @@ fi
 exec ${MAKE:-make} -C "$PROJECT_ROOT" \
     KSRC="$KERNEL_DIR" \
     CONFIG_AP_MODE=y \
+    CONFIG_P2P=n \
+    CONFIG_TDLS=n \
+    CONFIG_POWER_SAVING=n \
+    CONFIG_LAYER2_ROAMING=n \
+    CONFIG_RTW_IPCAM_APPLICATION=y \
     -j"$MAKE_JOBS" \
     modules

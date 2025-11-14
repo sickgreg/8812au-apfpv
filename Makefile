@@ -121,6 +121,7 @@ CONFIG_IP_R_MONITOR = n #arp VOQ and high rate
 # user priority mapping rule : tos, dscp
 CONFIG_RTW_UP_MAPPING_RULE = tos
 CONFIG_RTW_MBO = n
+
 ########################## Android ###########################
 # CONFIG_RTW_ANDROID - 0: no Android, 4/5/6/7/8/9/10/11 : Android version
 CONFIG_RTW_ANDROID = 0
@@ -165,6 +166,15 @@ CONFIG_MP_VHT_HW_TX_MODE = n
 CONFIG_LAYER2_ROAMING = y
 #bit0: ROAM_ON_EXPIRED, #bit1: ROAM_ON_RESUME, #bit2: ROAM_ACTIVE
 CONFIG_ROAMING_FLAG = 0x3
+ifeq ($(CONFIG_AP_MODE), y)
+CONFIG_P2P = n
+CONFIG_TDLS = n
+CONFIG_LAYER2_ROAMING = n
+CONFIG_ROAMING_FLAG = 0
+CONFIG_POWER_SAVING = n
+CONFIG_RTW_IPCAM_APPLICATION = y
+CONFIG_RTW_REPEATER_SON = n
+endif
 ###################### Platform Related #######################
 CONFIG_PLATFORM_AUTODETECT = y
 CONFIG_PLATFORM_I386_PC = n
