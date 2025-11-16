@@ -263,7 +263,8 @@ int rtw_bw_mode = CONFIG_RTW_CUSTOMIZE_BWMODE;
 int rtw_bw_mode = 0x21;
 #endif
 int rtw_ampdu_enable = 1;/* for enable tx_ampdu , */ /* 0: disable, 0x1:enable */
-int rtw_rx_stbc = 1;/* 0: disable, bit(0):enable 2.4g, bit(1):enable 5g, default is set to enable 2.4GHZ for IOT issue with bufflao's AP at 5GHZ */
+/* Enable RX STBC on both bands by default (bit0:2.4G, bit1:5G) */
+int rtw_rx_stbc = 3;/* 0: disable, bit(0):enable 2.4g, bit(1):enable 5g */
 #if (defined(CONFIG_RTL8814A) || defined(CONFIG_RTL8814B) || defined(CONFIG_RTL8822B) || defined(CONFIG_RTL8822C)) && defined(CONFIG_PCI_HCI)
 int rtw_rx_ampdu_amsdu = 2;/* 0: disabled, 1:enabled, 2:auto . There is an IOT issu with DLINK DIR-629 when the flag turn on */
 #elif ((defined(CONFIG_RTL8822B) || defined(CONFIG_RTL8822C)) && defined(CONFIG_SDIO_HCI))
@@ -312,7 +313,8 @@ int rtw_ldpc_cap = 0x33;
 #ifdef CONFIG_RTL8192F
 int rtw_stbc_cap = 0x30;
 #else
-int rtw_stbc_cap = 0x13;
+/* Enable HT/VHT RX+TX STBC by default (subject to RF path capabilities) */
+int rtw_stbc_cap = 0x33;
 #endif
 module_param(rtw_stbc_cap, int, 0644);
 /*

@@ -431,10 +431,15 @@
 #define CONFIG_IOCTL_WEXT
 
 #ifdef CONFIG_RTW_IPCAM_APPLICATION
+	/*
+	 * IPCAM profile: keep EDCA tuning, but do not force narrow bandwidth.
+	 * Allow 40 MHz @2.4G and up to 80 MHz @5G so hostapd HT/VHT configs work.
+	 */
 	#undef CONFIG_TXPWR_BY_RATE_EN
 	#define CONFIG_TXPWR_BY_RATE_EN 1
 	#define CONFIG_RTW_CUSTOMIZE_BEEDCA		0x0000431C
-	#define CONFIG_RTW_CUSTOMIZE_BWMODE		0x00
+	/* 0x21 => 2.4G:40 MHz, 5G:80 MHz (matches default driver expectation) */
+	#define CONFIG_RTW_CUSTOMIZE_BWMODE		0x21
 	#define CONFIG_RTW_CUSTOMIZE_RLSTA		0x30
 	#define CONFIG_CHECK_SPECIFIC_IE_CONTENT
 	#ifdef CONFIG_CUSTOMER_EZVIZ_CHIME2

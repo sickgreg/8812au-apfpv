@@ -144,7 +144,8 @@ sint _rtw_init_recv_priv(struct recv_priv *precvpriv, _adapter *padapter)
 #ifdef CONFIG_NEW_SIGNAL_STAT_PROCESS
 	rtw_init_timer(&precvpriv->signal_stat_timer, padapter, rtw_signal_stat_timer_hdl, padapter);
 
-	precvpriv->signal_stat_sampling_interval = 2000; /* ms */
+	/* Make RSSI sampling more responsive for proc rx_signal/trx_info */
+	precvpriv->signal_stat_sampling_interval = 200; /* ms */
 	/* precvpriv->signal_stat_converging_constant = 5000; */ /* ms */
 
 	rtw_set_signal_stat_timer(precvpriv);
@@ -4963,4 +4964,3 @@ void dump_rx_bh_tk(void *sel, struct recv_priv *recv)
 	);
 }
 #endif /* DBG_RX_BH_TRACKING */
-

@@ -3509,6 +3509,12 @@ int proc_get_trx_info_debug(struct seq_file *m, void *v)
 	/*============  rx info ============	*/
 	rtw_hal_set_odm_var(padapter, HAL_ODM_RX_INFO_DUMP, m, _FALSE);
 
+#ifdef DBG_RX_SIGNAL_DISPLAY_RAW_DATA
+	/* Append instantaneous per-path RSSI/SNR from recent packets for quick visibility */
+	RTW_PRINT_SEL(m, "\n[raw_rssi]\n");
+	rtw_get_raw_rssi_info(m, padapter);
+#endif
+
 	return 0;
 }
 
