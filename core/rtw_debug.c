@@ -3497,12 +3497,34 @@ int proc_get_trx_info_debug(struct seq_file *m, void *v)
 {
 	struct net_device *dev = m->private;
 	_adapter *padapter = (_adapter *)rtw_netdev_priv(dev);
+	struct recv_priv *precvpriv = &padapter->recvpriv;
+	struct mlme_priv *pmlmepriv = &padapter->mlmepriv;
+	struct sta_priv *pstapriv = &padapter->stapriv;
+	struct sta_info *psta = NULL;
+	u8 *cur_bssid = NULL;
 
 	/*============  tx info ============	*/
 	rtw_hal_get_def_var(padapter, HW_DEF_RA_INFO_DUMP, m);
 
 	/*============  rx info ============	*/
 	rtw_hal_set_odm_var(padapter, HAL_ODM_RX_INFO_DUMP, m, _FALSE);
+
+	RTW_PRINT_SEL(m, "\n============ Rapid RSSI update ============\n");
+	RTW_PRINT_SEL(m, "signal_strength = %u\n", precvpriv->signal_strength);
+	RTW_PRINT_SEL(m, "signal_qual = %u\n", precvpriv->signal_qual);
+	RTW_PRINT_SEL(m, "rssi = %d dBm\n", precvpriv->rssi);
+
+	if (check_fwstate(pmlmepriv, _FW_LINKED))
+		cur_bssid = get_bssid(pmlmepriv);
+
+	if (cur_bssid)
+		psta = rtw_get_stainfo(pstapriv, cur_bssid);
+
+	if (psta) {
+		RTW_PRINT_SEL(m, "sta_rssi = %d dBm\n", psta->cmn.rssi_stat.rssi);
+		RTW_PRINT_SEL(m, "sta_rssi_cck = %d dBm\n", psta->cmn.rssi_stat.rssi_cck);
+		RTW_PRINT_SEL(m, "sta_rssi_ofdm = %d dBm\n", psta->cmn.rssi_stat.rssi_ofdm);
+	}
 
 	return 0;
 }
