@@ -242,9 +242,6 @@ struct registry_priv {
 #ifdef CONFIG_TX_EARLY_MODE
 	u8   early_mode;
 #endif
-#ifdef CONFIG_SW_LED
-	u8   led_ctrl;
-#endif
 #ifdef CONFIG_NARROWBAND_SUPPORTING
 	u8	rtw_nb_config;
 #endif
@@ -292,7 +289,6 @@ struct registry_priv {
 	u8	rx_ampdu_amsdu;/* Rx A-MPDU Supports A-MSDU is permitted */
 	u8	tx_ampdu_amsdu;/* Tx A-MPDU Supports A-MSDU is permitted */
 	u8	tx_quick_addba_req;
-	u8	tx_max_agg_num; /* 0xFF: follow peer capability, value in units of two MPDUs */
 	u8 rx_ampdu_sz_limit_by_nss_bw[4][4]; /* 1~4SS, BW20~BW160 */
 	/* Short GI support Bit Map */
 	/* BIT0 - 20MHz, 1: support, 0: non-support */

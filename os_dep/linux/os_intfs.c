@@ -17,23 +17,10 @@
 #include <drv_types.h>
 #include <hal_data.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 8, 0))
-#define strlcpy strscpy
-#endif
-
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("Realtek Wireless Lan Driver");
 MODULE_AUTHOR("Realtek Semiconductor Corp.");
 MODULE_VERSION(DRIVERVERSION);
-/* Include namespace when file system namespace errors occur during
- * kernel build. This is about 'kernel_read' or 'kernel_write'
- *
- * This declaration was created to resolve an error on Rockchip.
- * You can modify or add flags in the fs/Makefile.
- */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0) && LINUX_VERSION_CODE < KERNEL_VERSION(6, 13, 0))
-	MODULE_IMPORT_NS(VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver);
-#endif
 
 /* module param defaults */
 int rtw_chip_version = 0x00;
@@ -155,10 +142,6 @@ int rtw_check_fw_ps = 1;
 int rtw_early_mode = 1;
 #endif
 
-#ifdef CONFIG_SW_LED
-int rtw_led_ctrl = 1; // default to normal blinking
-#endif
-
 int rtw_usb_rxagg_mode = 2;/* RX_AGG_DMA=1, RX_AGG_USB=2 */
 module_param(rtw_usb_rxagg_mode, int, 0644);
 
@@ -263,8 +246,7 @@ int rtw_bw_mode = CONFIG_RTW_CUSTOMIZE_BWMODE;
 int rtw_bw_mode = 0x21;
 #endif
 int rtw_ampdu_enable = 1;/* for enable tx_ampdu , */ /* 0: disable, 0x1:enable */
-/* Enable RX STBC on both bands by default (bit0:2.4G, bit1:5G) */
-int rtw_rx_stbc = 3;/* 0: disable, bit(0):enable 2.4g, bit(1):enable 5g */
+int rtw_rx_stbc = 1;/* 0: disable, bit(0):enable 2.4g, bit(1):enable 5g, default is set to enable 2.4GHZ for IOT issue with bufflao's AP at 5GHZ */
 #if (defined(CONFIG_RTL8814A) || defined(CONFIG_RTL8814B) || defined(CONFIG_RTL8822B) || defined(CONFIG_RTL8822C)) && defined(CONFIG_PCI_HCI)
 int rtw_rx_ampdu_amsdu = 2;/* 0: disabled, 1:enabled, 2:auto . There is an IOT issu with DLINK DIR-629 when the flag turn on */
 #elif ((defined(CONFIG_RTL8822B) || defined(CONFIG_RTL8822C)) && defined(CONFIG_SDIO_HCI))
@@ -313,8 +295,7 @@ int rtw_ldpc_cap = 0x33;
 #ifdef CONFIG_RTL8192F
 int rtw_stbc_cap = 0x30;
 #else
-/* Enable HT/VHT RX+TX STBC by default (subject to RF path capabilities) */
-int rtw_stbc_cap = 0x33;
+int rtw_stbc_cap = 0x13;
 #endif
 module_param(rtw_stbc_cap, int, 0644);
 /*
@@ -348,10 +329,6 @@ MODULE_PARM_DESC(rtw_vht_rx_mcs_map, "VHT RX MCS map");
 
 /* 0: not check in watch dog, 1: check in watch dog  */
 int rtw_check_hw_status = 0;
-
-int rtw_tx_max_agg_num = 12;
-module_param(rtw_tx_max_agg_num, int, 0644);
-MODULE_PARM_DESC(rtw_tx_max_agg_num, "Driver enforced TX AMPDU entry count (unit:2 frames), <=0 disables driver control");
 
 int rtw_low_power = 0;
 int rtw_wifi_spec = 0;
@@ -635,12 +612,6 @@ module_param(rtw_pci_aspm_enable, int, 0644);
 #ifdef CONFIG_TX_EARLY_MODE
 module_param(rtw_early_mode, int, 0644);
 #endif
-
-#ifdef CONFIG_SW_LED
-module_param(rtw_led_ctrl, int, 0644);
-MODULE_PARM_DESC(rtw_led_ctrl,"Led Control: 0=Always off, 1=Normal blink, 2=Always on");
-#endif
-
 #ifdef CONFIG_ADAPTOR_INFO_CACHING_FILE
 char *rtw_adaptor_info_caching_file_path = "/data/misc/wifi/rtw_cache";
 module_param(rtw_adaptor_info_caching_file_path, charp, 0644);
@@ -1301,10 +1272,6 @@ uint loadparam(_adapter *padapter)
 		registry_par->rx_ampdu_amsdu = (u8)rtw_rx_ampdu_amsdu;
 		registry_par->tx_ampdu_amsdu = (u8)rtw_tx_ampdu_amsdu;
 		registry_par->tx_quick_addba_req = (u8)rtw_quick_addba_req;
-		if (rtw_tx_max_agg_num <= 0 || rtw_tx_max_agg_num > 0x1F)
-				registry_par->tx_max_agg_num = 0xFF;
-		else
-				registry_par->tx_max_agg_num = (u8)rtw_tx_max_agg_num;
 		registry_par->short_gi = (u8)rtw_short_gi;
 		registry_par->ldpc_cap = (u8)rtw_ldpc_cap;
 #if defined(CONFIG_CUSTOMER01_SMART_ANTENNA)
@@ -1340,9 +1307,6 @@ uint loadparam(_adapter *padapter)
 
 #ifdef CONFIG_TX_EARLY_MODE
 	registry_par->early_mode = (u8)rtw_early_mode;
-#endif
-#ifdef CONFIG_SW_LED
-	registry_par->led_ctrl = (u8)rtw_led_ctrl;
 #endif
 	registry_par->trx_path_bmp = (u8)rtw_trx_path_bmp;
 	registry_par->tx_path_lmt = (u8)rtw_tx_path_lmt;
@@ -2207,10 +2171,6 @@ int rtw_os_ndev_register(_adapter *adapter, const char *name)
 	_rtw_memcpy(ndev->dev_addr, adapter_mac_addr(adapter), ETH_ALEN);
 #endif
 
-#if defined(CONFIG_NET_NS)
-    dev_net_set(ndev, wiphy_net(adapter_to_wiphy(adapter)));
-#endif //defined(CONFIG_NET_NS)
-
 	/* Tell the network stack we exist */
 
 	if (rtnl_lock_needed)
@@ -2594,7 +2554,7 @@ u8 rtw_init_default_value(_adapter *padapter)
 	padapter->tx_amsdu = 2;
 	padapter->tx_amsdu_rate = 400;
 #endif
-	padapter->driver_tx_max_agg_num = pregistrypriv->tx_max_agg_num;
+	padapter->driver_tx_max_agg_num = 0xFF;
 #ifdef DBG_RX_COUNTER_DUMP
 	padapter->dump_rx_cnt_mode = 0;
 	padapter->drv_rx_cnt_ok = 0;
